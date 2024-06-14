@@ -1,0 +1,61 @@
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Histogram Chart</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+      .chart-container {
+          width: 80%;
+          margin: auto;
+      }
+  </style>
+</head>
+  <body>
+    <div class="chart-container1">
+      <div><canvas id="myChart1" width="800" height="400"></canvas>
+      <form>
+        <div>
+          <input type="radio" id="typeDestination1" name="typeDistr" value="intervals"/>
+          <label for="chart1">Интервально</label>
+
+          <input type="radio" id="typeDestination2" name="typeDistr" value="uniform" checked/>
+          <label for="chart1">Равномерное</label>
+        </div>
+      </form>
+      <button onclick=openDialog(1)>Intervals Form</button>
+      <button onclick=fetchData(1)>Отрисовка</button>
+    </div>
+  <div class="chart-container2">
+      <div><canvas id="myChart2" width="800" height="400"></canvas>
+      <form>
+        <div>
+          <input type="radio" id="type1" name="typeDistr" value="intervals"/>
+          <label for="chart1">Интервально</label>
+
+          <input type="radio" id="type2" name="typeDistr" value="uniform" checked />
+          <label for="chart1">Равномерное</label>
+        </div>
+      </form>
+      <button onclick=openDialog(2)>Intervals Form</button>
+      <button onclick=fetchData(2)>Отрисовка</button>
+  </div>
+  <dialog id="Interval_dest_dialog">
+    <ul id="destinations_list"></ul>
+    <form id="dest_form">
+      <input type="number" name="min" min="0" max="3000.0" required>
+      <input type="number" name="max" min="0" max="3000.0" required>
+    </form>
+    <button onclick=addInterval(1)>Добавить</button>
+
+  </dialog>
+  <dialog id="Interval_asim_dialog">
+    <ul id="asimuts_list"></ul>
+    <form id="asimut_form">
+      <input type="number" name="min" min="0" max="360.0" required>
+      <input type="number" name="max" min="0" max="360.0" required>
+    </form>
+    <button onclick=addInterval(2)>Добавить</button>
+  </dialog>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="{{ url_for('static', filename='index.js') }}"></script>
+  
