@@ -24,13 +24,14 @@ def Data_Post_Uniform(data_name,step):
     dataToSend = Uniform_histogram(step,data) #Построение словаря с подписями интервалов и количествами попадания в них для слуая с step=const.
     return jsonify(dataToSend)
 
-@app.route('/<string:data_name>/list')
+@app.route('/<string:data_name>/list', methods=['POST'])
 def Data_Post_Intervals(data_name):
     if data_name == 'destinations':
         data = destinations
     elif data_name == 'asimuts': #Выбор нужного массива для отправки
         data = asimuts
-    dataToSend = Interval_histogram(list,data) #Построение словаря с подписями интервалов и количествами попадания в них для слуая с интервалами
+    list_intervals = request.json['intervals']
+    dataToSend = Interval_histogram(list_intervals,data) #Построение словаря с подписями интервалов и количествами попадания в них для слуая с интервалами
     return jsonify(dataToSend)
     
 #numba needed
@@ -83,7 +84,7 @@ def Reading_file():
 
 if __name__ == '__main__':
     destinations, asimuts = Reading_file() #Считываем файл
-    destinations = np.sort(np.array(destinations)) 
+    destinations = np.sort(np.array(destinations))  
     asimuts = np.sort(np.array(asimuts)) #Сортируем данные
     app.run(debug=True,port=3000,host='127.0.0.1')
 

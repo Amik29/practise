@@ -81,19 +81,48 @@ function addInterval(id) {
   }
 };
 
+function showElements(){
+  var dropdown = document.getElementById("chartType")
+  var selectedElement = dropdown.options[dropdown.selectedIndex].value;
+  
+  var chart1 = document.getElementById("DestinationsChart");
+  var chart2 = document.getElementById("AsimutsChart"); 
+  //var chart3 = document.getElementById("DestinationsChart");
+  //var chart4 = document.getElementById("DestinationsChart");
+  
+  chart1.style.display = "none";
+  chart2.style.display = "none";
 
+  if (selectedElement === "destinations"){
+    chart1.style.display = "block";
+  }
+  else if (selectedElement === "asimuts"){
+    chart2.style.display = "block";
+  }
+
+
+}
+
+function Submit_data_intervals(){
+  
+}
+
+function getUrl(id){
+  if (id == 1){ 
+    var url = 'http://127.0.0.1:3000/destinations/40'
+  }
+  else {
+    var url = 'http://127.0.0.1:3000/asimuts/10.0';
+  }
+  return url
+}
 
 function fetchData(Id) {
   var chart = Chart.getChart('myChart' + Id);
   if(chart){
     chart.destroy();
   }
-  if (Id == 1){
-    var url = 'http://127.0.0.1:3000/destinations/40'
-  }
-  else {
-    var url = 'http://127.0.0.1:3000/asimuts/10.0';
-  }
+  var url = getUrl(Id)
   fetch(url)
   .then(response => response.json())
   .then(data => {
