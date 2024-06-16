@@ -1,4 +1,4 @@
-from flask import Flask,jsonify,render_template,request
+from flask import Flask,jsonify,render_template,session,request
 from flask_restful import Api
 import numpy as np
 
@@ -7,11 +7,11 @@ app = Flask(__name__)
 api = Api()
 
 api.init_app(app)
+app.secret_key = 'BAD_SECRET_KEY'
 
 @app.route('/')
 def responser():
     return render_template('index.html')
-
 
 
 @app.route('/<string:data_name>/<float:step>/')
@@ -24,16 +24,26 @@ def Data_Post_Uniform(data_name,step):
     dataToSend = Uniform_histogram(step,data) #Построение словаря с подписями интервалов и количествами попадания в них для слуая с step=const.
     return jsonify(dataToSend)
 
-@app.route('/<string:data_name>/list', methods=['POST'])
+@app.route('/<string:data_name>/list')
 def Data_Post_Intervals(data_name):
     if data_name == 'destinations':
         data = destinations
     elif data_name == 'asimuts': #Выбор нужного массива для отправки
         data = asimuts
-    list_intervals = request.json['intervals']
-    dataToSend = Interval_histogram(list_intervals,data) #Построение словаря с подписями интервалов и количествами попадания в них для слуая с интервалами
+    list_intervals = session['intervals']
+    print(list_intervals)
+    dataToSend = Interval_histogram(list_intervals,data)
+    print(dataToSend)
     return jsonify(dataToSend)
-    
+
+
+
+@app.route('/<string:data_name>/postlist',methods=['POST'])
+def Get_Intervals(data_name):
+    session['intervals'] = request.get_json()['array']
+    print(session['intervals'])
+    return jsonify({'message': 'Данные получены' + data_name})
+
 #numba needed
 def Uniform_histogram(step,data):
     i = 0
@@ -64,6 +74,7 @@ def Uniform_histogram_ver2(step,data):
 def Interval_histogram(intervals:list,data:list):   
     bins = {}
     borders = []
+    print(intervals)
     i=0
     for el in intervals:
         bins[i] = [intervals[i],0]
@@ -76,6 +87,7 @@ def Interval_histogram(intervals:list,data:list):
                 bins[i][1]+=1
                 break
             i+=1
+    print(bins)
     data_new = [value for value in bins.values()]
     data_labels = [data_new[i][0] for i in range(len(data_new))]
     data_bars = [data_new[i][1] for i in range(len(data_new))]
@@ -84,7 +96,7 @@ def Interval_histogram(intervals:list,data:list):
 
 
 if __name__ == '__main__':
-    destinations, asimuts = np.loadtxt('Hists_base.txt',skiprows=1,usecols=(2,3),unpack=True) #Считываем файл
+    destinations, asimuts = np.loadtxt('Hists_local.txt',skiprows=1,usecols=(2,3),unpack=True) #Считываем файл
     destinations = np.sort(np.array(destinations))  
     asimuts = np.sort(np.array(asimuts)) #Сортируем данные
     app.run(debug=True,port=3000,host='127.0.0.1')

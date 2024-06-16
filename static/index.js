@@ -116,8 +116,28 @@ function changeChart(){
 
 }
 
-function Submit_data_intervals(){
-  
+function Submit_data_intervals(id){
+    let arr = [];
+    if (id == 1)
+    {
+      arr = dataset_destinations;
+      var url = 'http://127.0.0.1:3000/destinations/postlist'
+    } 
+    else 
+    {
+      arr = dataset_asimuts;
+      var url = 'http://127.0.0.1:3000/destinations/postlist'
+    }
+    fetch(url,{
+      method:'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({array: arr})
+    })
+    .then(response => response.json())
+    .then(data => console.log(data))
+    .catch(error =>console.error('Ошибка:',error));
 }
 
 function checkTypeBins(value,id){
@@ -153,10 +173,20 @@ function checkTypeBins(value,id){
 
 function getUrl(id){
   if (id == 1){ 
-    var url = 'http://127.0.0.1:3000/destinations/' + document.getElementById("stepDest").value
+    var url = 'http://127.0.0.1:3000/destinations/'
+    var radio = document.getElementById('typeDest1');
+    var value = document.getElementById('stepDest').value;
   }
   else {
-    var url = 'http://127.0.0.1:3000/asimuts/' + document.getElementById("stepAsim").value;
+    var url = 'http://127.0.0.1:3000/asimuts/'
+    var radio = document.getElementById('typeAsim1');
+    var value = document.getElementById('stepAsim').value;
+  }
+  if (radio.checked){
+    url = url + 'list';
+  }
+  else {
+    url = url + value;
   }
   return url
 }
@@ -164,7 +194,8 @@ function getUrl(id){
 function fetchData(Id) {
   var chart = Chart.getChart('myChart' + Id);
   var url = getUrl(Id)
-  fetch(url)
+  fetch(url,{
+  })
   .then(response => response.json())
   .then(data => {
       // Данные успешно получены, теперь можно отобразить график
