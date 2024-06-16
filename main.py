@@ -49,6 +49,18 @@ def Uniform_histogram(step,data):
     return {"labels":data_labels,"values":data_bins}
 
 
+def Uniform_histogram_ver2(step,data):
+    a = data[0]
+    b = data[-1]
+    bins = []
+    i = 0
+    for i in range(0,int((b-a))//step):
+        bins.append(a+i*step)
+    hist, hist_bins = np.histogram(data,bins)
+    print(hist,hist_bins)
+    return {"labels":hist_bins,"values":hist}
+
+
 def Interval_histogram(intervals:list,data:list):   
     bins = {}
     borders = []
@@ -70,20 +82,9 @@ def Interval_histogram(intervals:list,data:list):
     return({"labels":data_labels,"values":data_bars})
 
 
-def Reading_file():
-    destination = []
-    asimuts = []
-    with open('Hists_base.txt', 'r') as file:
-        next(file)
-        for line in file:
-            data = line.split()
-            destination.append(float(data[2]))
-            asimuts.append(float(data[3]))
-    return destination, asimuts
-
 
 if __name__ == '__main__':
-    destinations, asimuts = Reading_file() #Считываем файл
+    destinations, asimuts = np.loadtxt('Hists_base.txt',skiprows=1,usecols=(2,3),unpack=True) #Считываем файл
     destinations = np.sort(np.array(destinations))  
     asimuts = np.sort(np.array(asimuts)) #Сортируем данные
     app.run(debug=True,port=3000,host='127.0.0.1')

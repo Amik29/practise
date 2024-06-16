@@ -6,8 +6,8 @@
 
 </head>
   <body>
-    <label for="chartType">Choose a chart type:</label>
-    <select id="chartType" onchange="showElements()">
+    <label for="chartType">Выбрать тип диаграммы:</label>
+    <select id="chartType" onchange="changeChart()">
         <option value="destinations" selected>Удаления</option>
         <option value="asimuts">Азимут</option>
         <option value="percentege">Процентное отклонение</option>
@@ -19,14 +19,15 @@
       <div><canvas id="myChart1"></canvas>
       <form>
         <div>
-        <input type="radio" id="typeDestination1" name="typeDistr" value="intervals" onchange="console.log(this.value)"/>
+        <input type="radio" id="typeDest1" name="typeDistr" value="intervals" onchange="checkTypeBins(value,1)"/>
         <label for="chart1">Интервально</label>
 
-        <input type="radio" id="typeDestination2" name="typeDistr" value="uniform" onchange="console.log(this.value)" checked/>
+        <input type="radio" id="typeDest2" name="typeDistr" value="uniform" onchange="checkTypeBins(value,1)" checked/>
         <label for="chart1">Равномерное</label>
         </div>
       </form>
-      <button onclick=openDialog(1)>Intervals Form</button>
+      <button onclick=openDialog(1) id='varDest' style="display: none;">Задать интервалы</button>
+      <input type="number" id="stepDest" style="display: inline;" min="0.0" name="Шаг">
       <button onclick=fetchData(1)>Отрисовка</button>
       </div>
     </div>
@@ -36,24 +37,38 @@
     <div><canvas id="myChart2"></canvas>
       <form>
         <div>
-          <input type="radio" id="type1" name="typeDistr" value="intervals" onchange="console.log(this.value)"/>
+          <input type="radio" id="typeAsim1" name="typeDistr" value="intervals" onchange="checkTypeBins(value,2)"/>
           <label for="chart1">Интервально</label>
 
-          <input type="radio" id="type2" name="typeDistr" value="uniform" onchange="console.log(this.value)" checked />
+          <input type="radio" id="typeAsim2" name="typeDistr" value="uniform" onchange="checkTypeBins(value,2)" checked />
           <label for="chart1">Равномерное</label>
         </div>
       </form>
-      <button onclick=openDialog(2)>Intervals Form</button>
+      <button onclick=openDialog(2) id='varAsim' style="display: none;">Задать интервалы</button>
+      <input type="number" id="stepAsim" style="display: inline;" min="0.0" name="Шаг">
       <button onclick=fetchData(2)>Отрисовка</button>
     </div>
   </div>
+
+  
+  <div class="chart-container3" id="PercentegeChart" style="display: none; width:85vw">
+    <div><canvas id="myChart3"></canvas>
+      <div>
+      Процент<input type="number" min="0" max="100">
+      Кол-во корзин<input type ="number" min="0" id="number_bins">
+      <button onclick=fetchData(3)>Отрисовка</button>
+    </div>
+    </div>
+  </div>      
+  
+
 
 
   <dialog id="Interval_dest_dialog">
     <ul id="destinations_list"></ul>
     <form id="dest_form">
-      <input type="number" name="min" min="0.0" max="3000.0" required>
-      <input type="number" name="max" min="0.0" max="3000.0" required>
+      min:<input type="number" name="min" min="0.0" max="3000.0" id="dest_min" required>
+      max:<input type="number" name="max" min="0.0" max="3000.0" id="dest_max" required>
       
     </form>
     <button onclick=addInterval(1)>Добавить</button>

@@ -49,16 +49,24 @@ function list_display(list,dataset,id){
   };
 };
 
-function valid_range(min,max){
+function valid_range(min,max,data){
+  console.log(data);
+  for (i=0;i<data.length;i++){
+    borders = data[i].split('-');
+    if (min>=borders[0] && min<borders[1] || max<=borders[1] && max>borders[0])
+      return false;
+  }
   return max>min;
 }
 
 function addInterval(id) {
   var form
+  var cur_dataset
   try{
   if (id == 1){
     form = new FormData(document.getElementById("dest_form"));
-    if (!valid_range(form.get('min'),form.get('max')))
+    cur_dataset = list_detection(id)[1];
+    if (!valid_range(Number(form.get('min')),Number(form.get('max')),cur_dataset))
     {
       throw "Неправильные границы"
     }
@@ -66,7 +74,8 @@ function addInterval(id) {
   }
   else {
     form = new FormData(document.getElementById("asimut_form"));
-    if (!valid_range(form.get('min'),form.get('max')))
+    cur_dataset = list_detection(id)[1];
+    if (!valid_range(Number(form.get('min')),Number(form.get('max')),cur_dataset))
     {
       throw "Неправильные границы"
     }
@@ -81,23 +90,27 @@ function addInterval(id) {
   }
 };
 
-function showElements(){
+function changeChart(){
   var dropdown = document.getElementById("chartType")
   var selectedElement = dropdown.options[dropdown.selectedIndex].value;
   
   var chart1 = document.getElementById("DestinationsChart");
   var chart2 = document.getElementById("AsimutsChart"); 
-  //var chart3 = document.getElementById("DestinationsChart");
+  var chart3 = document.getElementById("PercentegeChart");
   //var chart4 = document.getElementById("DestinationsChart");
   
   chart1.style.display = "none";
   chart2.style.display = "none";
+  chart3.style.display = "none";
 
   if (selectedElement === "destinations"){
     chart1.style.display = "block";
   }
   else if (selectedElement === "asimuts"){
     chart2.style.display = "block";
+  }
+  else if (selectedElement === "percentege"){
+    chart3.style.display = "block";
   }
 
 
@@ -107,26 +120,57 @@ function Submit_data_intervals(){
   
 }
 
+function checkTypeBins(value,id){
+  buttonDest = document.getElementById('varDest')
+  boxDest = document.getElementById('stepDest')
+  buttonAsim = document.getElementById('varAsim')
+  boxAsim = document.getElementById('stepAsim')
+  
+  if(value == "intervals")
+    if (id == 1){
+      buttonDest.style = "display:inline";
+      boxDest.style = "display:none";
+    }
+    else
+    {
+    buttonAsim.style = "display:inline";
+    boxAsim.style = "display:none";
+    }
+    else
+    if (id == 1)
+    {
+      buttonDest.style = "display:none"
+      boxDest.style = "display:inline";
+    }
+    else
+    {
+      buttonAsim.style = "display:none"
+      boxAsim.style = "display:inline";
+    }
+  
+}
+
+
 function getUrl(id){
   if (id == 1){ 
-    var url = 'http://127.0.0.1:3000/destinations/40'
+    var url = 'http://127.0.0.1:3000/destinations/' + document.getElementById("stepDest").value
   }
   else {
-    var url = 'http://127.0.0.1:3000/asimuts/10.0';
+    var url = 'http://127.0.0.1:3000/asimuts/' + document.getElementById("stepAsim").value;
   }
   return url
 }
 
 function fetchData(Id) {
   var chart = Chart.getChart('myChart' + Id);
-  if(chart){
-    chart.destroy();
-  }
   var url = getUrl(Id)
   fetch(url)
   .then(response => response.json())
   .then(data => {
       // Данные успешно получены, теперь можно отобразить график
+      if(chart){
+        chart.destroy();
+      }
       drawChart(data,Id);
   })
   .catch(error => {
