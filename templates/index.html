@@ -3,7 +3,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Histogram Chart</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
   <body>
     <label for="chartType">Выбрать тип диаграммы:</label>
@@ -60,6 +60,17 @@
     </div>
     </div>
   </div>      
+
+  <div class="chart-container4" id="RoseChart" style="display: none; width:85vw">
+    <div>
+      <div class="graph" id="graph"></div> 
+      <div>
+      Шаг по азимуту<input type="number" id="RoseStepAsim" min="0" max="360" style="display: block;">
+      Шаг по удалению<input type ="number" id="RoseStepDest" min="0" id="3000" style="display: block;">
+      <button onclick=RoseDiag()>Отрисовка</button>
+    </div>
+    </div>
+  </div>   
   
 
 
@@ -87,5 +98,6 @@
 
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
   <script src="{{ url_for('static', filename='index.js') }}"></script>
   

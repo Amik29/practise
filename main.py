@@ -1,7 +1,7 @@
 from flask import Flask,jsonify,render_template,session,request
 from flask_restful import Api
 import numpy as np
-
+from numba import njit
 
 app = Flask(__name__)
 api = Api()
@@ -11,7 +11,7 @@ app.secret_key = 'BAD_SECRET_KEY'
 
 @app.route('/')
 def responser():
-    return render_template('index.html')
+    return render_template('index.html') # Рендер базовой страницы
 
 
 @app.route('/<string:data_name>/<float:step>/')
@@ -31,8 +31,7 @@ def Data_Post_Intervals(data_name):
     elif data_name == 'asimuts': #Выбор нужного массива для отправки
         data = asimuts
     list_intervals = session['intervals']
-    print(list_intervals)
-    dataToSend = Interval_histogram(list_intervals,data)
+    dataToSend = Interval_histogram(list_intervals,data) # Рассчет значений корзин для заданных интервалов 
     print(dataToSend)
     return jsonify(dataToSend)
 
@@ -40,9 +39,16 @@ def Data_Post_Intervals(data_name):
 
 @app.route('/<string:data_name>/postlist',methods=['POST'])
 def Get_Intervals(data_name):
-    session['intervals'] = request.get_json()['array']
-    print(session['intervals'])
+    session['intervals'] = sorted(request.get_json()['array'], key=lambda x: int(x.split('-')[0]))
+    print("Intervals_get")
     return jsonify({'message': 'Данные получены' + data_name})
+    
+@app.route('/RoseDiag/',methods=['POST'])
+def Get_RoseDiag():
+    print("RoseDiag: data_send")
+    return jsonify((RoseDiag(asimuts,destinations,float(request.get_json()['stepAsim']),float(request.get_json()['stepDest']))))
+
+
 
 #numba needed
 def Uniform_histogram(step,data):
@@ -59,44 +65,68 @@ def Uniform_histogram(step,data):
     return {"labels":data_labels,"values":data_bins}
 
 
-def Uniform_histogram_ver2(step,data):
-    a = data[0]
-    b = data[-1]
-    bins = []
+def RoseDiag(data_asim,data_dest,step_asim,step_dest):
     i = 0
-    for i in range(0,int((b-a))//step):
-        bins.append(a+i*step)
-    hist, hist_bins = np.histogram(data,bins)
-    print(hist,hist_bins)
-    return {"labels":hist_bins,"values":hist}
+    j = 0
+    #bins = {(index_bin_asim, index_bin_dest) : count} 
+    bins = {} # Создание корзин для диаграммы
+    while i*step_asim <= data_asim[-1]:
+        j=0
+        while j*step_dest <= data_dest[-1]:
+            bins[(i,j)] = 0 #Заполнение ее ключами
+            j+=1
+        i+=1
+    
+    for k in range(len(data_asim)):
+        bins[(int(data_asim[k]//step_asim),int(data_dest[k]//step_dest))]+=1 #Считывание массива данных и заполнение словаря
+    
+    list_response = []
+    data_size = len(data_asim)
+    theta = []
+    for i_iter in range(i):
+        theta.append(f'{i_iter*step_asim} - {(i_iter+1)*step_asim}')
+    print(bins)
+    for i_iter in range(i):
+        for j_iter in range(j):
+            r = [0]*j
+            r[i_iter] = float((j_iter+1)*step_dest)
+            list_response.append(
+                {
+                    "r": r,
+                    "theta": theta,
+                    "name": f"{j_iter*step_dest} - {(j_iter+1)*step_dest} , {i_iter*step_asim} - {(i_iter+1)*step_asim}",
+                    "marker": {"color": f"rgb({bins[(i_iter,j_iter)]/(data_size/2) * 255},0,0)"},
+                    "type": "barpolar"
+                }
+            )
+    return list_response[::-1]
+
 
 
 def Interval_histogram(intervals:list,data:list):   
-    bins = {}
-    borders = []
-    print(intervals)
+    bins = {} #Создание корзин
+    borders = [] # Создание списка интервалов
     i=0
     for el in intervals:
         bins[i] = [intervals[i],0]
-        borders.append(list(map(float,el.split('-'))))
+        borders.append(list(map(float,el.split('-')))) # при помощи операции Split формируем интервалы
         i+=1   
     for el in data:
         i = 0
         for border in borders:
             if el<=border[1] and el>=border[0]:
-                bins[i][1]+=1
+                bins[i][1]+=1 # заполнение корзин 
                 break
             i+=1
-    print(bins)
     data_new = [value for value in bins.values()]
     data_labels = [data_new[i][0] for i in range(len(data_new))]
     data_bars = [data_new[i][1] for i in range(len(data_new))]
-    return({"labels":data_labels,"values":data_bars})
+    return({"labels":data_labels,"values":data_bars}) 
 
 
 
 if __name__ == '__main__':
-    destinations, asimuts = np.loadtxt('Hists_local.txt',skiprows=1,usecols=(2,3),unpack=True) #Считываем файл
+    destinations, asimuts = np.loadtxt('Hists_base.txt',skiprows=1,usecols=(2,3),unpack=True) #Считываем файл
     destinations = np.sort(np.array(destinations))  
     asimuts = np.sort(np.array(asimuts)) #Сортируем данные
     app.run(debug=True,port=3000,host='127.0.0.1')

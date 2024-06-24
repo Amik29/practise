@@ -97,23 +97,27 @@ function changeChart(){
   var chart1 = document.getElementById("DestinationsChart");
   var chart2 = document.getElementById("AsimutsChart"); 
   var chart3 = document.getElementById("PercentegeChart");
-  //var chart4 = document.getElementById("DestinationsChart");
-  
+  var chart4 = document.getElementById("RoseChart");
+
   chart1.style.display = "none";
   chart2.style.display = "none";
   chart3.style.display = "none";
+  chart4.style.display = "none";
 
-  if (selectedElement === "destinations"){
-    chart1.style.display = "block";
+  switch(selectedElement) {
+    case "destinations":
+      chart1.style.display = "block";
+      break;
+    case "asimuts":
+      chart2.style.display = "block";
+      break;
+    case "percentege":
+      chart3.style.display = "block";
+      break;
+    case "rose":
+      chart4.style.display = "block";
+      break;
   }
-  else if (selectedElement === "asimuts"){
-    chart2.style.display = "block";
-  }
-  else if (selectedElement === "percentege"){
-    chart3.style.display = "block";
-  }
-
-
 }
 
 function Submit_data_intervals(id){
@@ -169,7 +173,6 @@ function checkTypeBins(value,id){
     }
   
 }
-
 
 function getUrl(id){
   if (id == 1){ 
@@ -240,4 +243,36 @@ function drawChart(data,Id) {
           }
       }
   });
+}
+
+
+function RoseDiag(){
+  data_response = fetch("http://127.0.0.1:3000/RoseDiag",
+  {
+    method:'POST',
+    headers: {
+    'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({stepDest: document.getElementById("RoseStepDest").value, stepAsim:document.getElementById("RoseStepAsim").value })
+  })
+  .then(response => response.json())
+  .then(data => {
+    console.log(data)
+    const graph = document.getElementById('graph'); 
+    graph.innerHTML = '';
+    var layout = {
+      title: "Роза-Диаграмма , 0 азимут - север, 1) Удаление, 2) Азимут",
+      font: {size: 16},
+      legend: {font: {size: 16}}, 
+      polar: {
+        barmode: "overlay",
+        bargap: 0,
+        radialaxis: {angle: 0, dtick: 300},
+        angularaxis: {direction: "clockwise"}
+      }
+    }
+    Plotly.newPlot("graph", data, layout)
+  })
+  .catch(error => console.error('Ошибка:', error))
+
 }
