@@ -175,22 +175,44 @@ function checkTypeBins(value,id){
 }
 
 function getUrl(id){
-  if (id == 1){ 
-    var url = 'http://127.0.0.1:3000/destinations/'
-    var radio = document.getElementById('typeDest1');
-    var value = document.getElementById('stepDest').value;
-  }
-  else {
-    var url = 'http://127.0.0.1:3000/asimuts/'
-    var radio = document.getElementById('typeAsim1');
-    var value = document.getElementById('stepAsim').value;
-  }
-  if (radio.checked){
-    url = url + 'list';
-  }
-  else {
-    url = url + value;
-  }
+  switch(id){
+    case 1:
+      var url = 'http://127.0.0.1:3000/destinations/'
+      var radio = document.getElementById('typeDest1');
+      var value = document.getElementById('stepDest').value;
+      if (radio.checked){
+        url = url + 'list';
+      }
+      else {
+        url = url + value;
+      }
+      break;
+    case 2:
+      var url = 'http://127.0.0.1:3000/asimuts/'
+      var radio = document.getElementById('typeAsim1');
+      var value = document.getElementById('stepAsim').value;
+      if (radio.checked){
+        url = url + 'list';
+      }
+      else {
+        url = url + value;
+      }
+      break;
+    case 3:
+      var url = 'http://127.0.0.1:3000/PercentDiag/';
+      var percentege = document.getElementById("percent_num").value;
+      var num_bins = document.getElementById("number_bins").value;
+      var data_name_radio = document.getElementById("typeData1")
+      if (data_name_radio.checked == 1){
+        url = url + "destinations/";
+      }
+      else {
+        url = url + "asimuts/"
+      }
+      url = url + percentege + '/' + num_bins;
+      break;
+    }
+    console.log(url)
   return url
 }
 
@@ -215,11 +237,43 @@ function fetchData(Id) {
 function drawChart(data,Id) {
   var ctx = document.getElementById('myChart' + Id).getContext('2d');
   var label = '';
-  if (Id==1){
-    label = 'Удаления'
+  switch(Id){
+    case 1:
+      label = 'Удаления'
+    case 2:
+      label = 'Азимут'
   }
-  else{
-    label = 'Азимут'
+  var chart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+          labels: data.labels,
+          datasets: [{
+              label: label,
+              data: data.values,
+              backgroundColor: 'rgba(54, 162, 235, 0.2)',
+              borderColor: 'rgba(54, 162, 235, 1)',
+              borderWidth: 1
+          }]
+      },
+      options: {
+          scales: {
+              yAxes: [{
+                  ticks: {
+                      beginAtZero: true
+                  }
+              }]
+          }
+      }
+  });
+}
+function drawChart(data,Id,i) {
+  var ctx = document.getElementById('myChart' + 3).getContext('2d');
+  var label = '';
+  switch(Id){
+    case 1:
+      label = 'Удаления'
+    case 2:
+      label = 'Азимут'
   }
   var chart = new Chart(ctx, {
       type: 'bar',
@@ -272,6 +326,30 @@ function RoseDiag(){
       }
     }
     Plotly.newPlot("graph", data, layout)
+  })
+  .catch(error => console.error('Ошибка:', error))
+
+}
+
+function PercentDiag(){
+  data_name = document.getElementById("typeData1").checked ? "destinations" : "asimuts"
+  Id = document.getElementById("typeData1").checked ? 1 : 2
+  var chart = Chart.getChart('myChart3');
+  data_response = fetch("http://127.0.0.1:3000/PercentDiag",
+  {
+    method:'POST',
+    headers: {
+    'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({data_name : data_name, percent: document.getElementById("percent_num").value, num_bins:document.getElementById("number_bins").value })
+  })
+  .then(response => response.json())
+  .then(data => {
+    console.log(data)
+    if(chart){
+      chart.destroy();
+    }
+    drawChart(data,Id,1);
   })
   .catch(error => console.error('Ошибка:', error))
 
