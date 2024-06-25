@@ -181,6 +181,9 @@ def custom_histogram(data, deviation_percent, n_bins) -> dict:
  
         prev_bin_max = bin_max 
         cumulative_count += bin_counts[i]
+    total_bin_count = sum(bin_counts) 
+    if total_bin_count > data_length: 
+        bin_counts[-1] = data_length - sum(bin_counts[:-1]) 
     bin_counts = list(map(int,bin_counts))
     return ({"labels": data_labels, "values": bin_counts})
 
