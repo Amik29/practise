@@ -199,17 +199,7 @@ function getUrl(id){
       }
       break;
     case 3:
-      var url = 'http://127.0.0.1:3000/PercentDiag/';
-      var percentege = document.getElementById("percent_num").value;
-      var num_bins = document.getElementById("number_bins").value;
-      var data_name_radio = document.getElementById("typeData1")
-      if (data_name_radio.checked == 1){
-        url = url + "destinations/";
-      }
-      else {
-        url = url + "asimuts/"
-      }
-      url = url + percentege + '/' + num_bins;
+      var url = 'http://127.0.0.1:3000/PercentDiag';
       break;
     }
     console.log(url)
@@ -219,61 +209,76 @@ function getUrl(id){
 function fetchData(Id) {
   var chart = Chart.getChart('myChart' + Id);
   var url = getUrl(Id)
-  fetch(url,{
-  })
-  .then(response => response.json())
-  .then(data => {
-      // Данные успешно получены, теперь можно отобразить график
-      if(chart){
-        chart.destroy();
-      }
-      drawChart(data,Id);
-  })
-  .catch(error => {
-      console.error('Произошла ошибка при получении данных:', error);
-  });
+  switch(Id){
+    case 3:
+      data_name = document.getElementById("typeData1").checked ? "destinations" : "asimuts"
+      console.log(data_name)
+      fetch(url,{
+        method:'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({data_name : data_name, percent: document.getElementById("percent_num").value, num_bins:document.getElementById("number_bins").value })
+      })
+      .then(response => response.json())
+      .then(data => {
+          // Данные успешно получены, теперь можно отобразить график
+          if(chart){
+            chart.destroy();
+          }
+          drawChart(data,Id);
+      })
+      .catch(error => {
+          console.error('Произошла ошибка при получении данных:', error);
+      });
+      break;
+    case 1:
+      fetch(url,{
+      })
+      .then(response => response.json())
+      .then(data => {
+          // Данные успешно получены, теперь можно отобразить график
+          if(chart){
+            chart.destroy();
+          }
+          drawChart(data,Id);
+      })
+      .catch(error => {
+          console.error('Произошла ошибка при получении данных:', error);
+      });
+      break;
+      case 2:
+      fetch(url,{
+      })
+      .then(response => response.json())
+      .then(data => {
+          // Данные успешно получены, теперь можно отобразить график
+          if(chart){
+            chart.destroy();
+          }
+          drawChart(data,Id);
+      })
+      .catch(error => {
+          console.error('Произошла ошибка при получении данных:', error);
+      });
+      break;
+  }
 }
 
 function drawChart(data,Id) {
   var ctx = document.getElementById('myChart' + Id).getContext('2d');
   var label = '';
-  switch(Id){
+  switch(Id)
+  {
     case 1:
-      label = 'Удаления'
+      label = 'Удаления';
+      break;
     case 2:
-      label = 'Азимут'
-  }
-  var chart = new Chart(ctx, {
-      type: 'bar',
-      data: {
-          labels: data.labels,
-          datasets: [{
-              label: label,
-              data: data.values,
-              backgroundColor: 'rgba(54, 162, 235, 0.2)',
-              borderColor: 'rgba(54, 162, 235, 1)',
-              borderWidth: 1
-          }]
-      },
-      options: {
-          scales: {
-              yAxes: [{
-                  ticks: {
-                      beginAtZero: true
-                  }
-              }]
-          }
-      }
-  });
-}
-function drawChart(data,Id,i) {
-  var ctx = document.getElementById('myChart' + 3).getContext('2d');
-  var label = '';
-  switch(Id){
-    case 1:
-      label = 'Удаления'
-    case 2:
-      label = 'Азимут'
+      label = 'Азимут';
+      break;
+    case 3:
+      label = 'Удаления';
+      break;
   }
   var chart = new Chart(ctx, {
       type: 'bar',
@@ -332,8 +337,6 @@ function RoseDiag(){
 }
 
 function PercentDiag(){
-  data_name = document.getElementById("typeData1").checked ? "destinations" : "asimuts"
-  Id = document.getElementById("typeData1").checked ? 1 : 2
   var chart = Chart.getChart('myChart3');
   data_response = fetch("http://127.0.0.1:3000/PercentDiag",
   {
